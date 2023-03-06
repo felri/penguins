@@ -1,7 +1,6 @@
-uniform vec2 u_resolution;
-uniform float u_time;
-uniform vec2 u_mouse;
+varying vec2 vUvs;
 
-void main() {
+void main() {	
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vUvs = uv;
 }

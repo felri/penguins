@@ -1,113 +1,147 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
 
-#define NUM_OCTAVES 3
-
-uniform float u_time;
+varying vec2 vUvs;
 uniform vec2 u_resolution;
-uniform vec2 u_mouse;
+uniform float u_time;
+uniform float u_zoom;
 
-
-mat3 rotX(float a){
-  float c=cos(a);
-  float s=sin(a);
-  return mat3(
-    1,0,0,
-    0,c,-s,
-    0,s,c
-  );
-}
-mat3 rotY(float a){
-  float c=cos(a);
-  float s=sin(a);
-  return mat3(
-    c,0,-s,
-    0,1,0,
-    s,0,c
-  );
+float inverseLerp(float v, float minValue, float maxValue) {
+  return (v - minValue) / (maxValue - minValue);
 }
 
-float hash(vec2 pos){
-  return fract(sin(dot(pos,vec2(12.9898,78.233)))*43758.5453);
+float remap(float v, float inMin, float inMax, float outMin, float outMax) {
+  float t = inverseLerp(v, inMin, inMax);
+  return mix(outMin, outMax, t);
 }
 
-float noise(vec2 pos){
-  vec2 i=floor(pos);
-  vec2 f=fract(pos);
-  
-  vec2 u=f*f*(3.-2.*f);
-  
-  float a=hash(i+vec2(0.,0.));
-  float b=hash(i+vec2(1.,0.));
-  float c=hash(i+vec2(0.,1.));
-  float d=hash(i+vec2(1.,1.));
-  
-  return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;
+// The MIT License
+// Copyright © 2013 Inigo Quilez
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// https://www.youtube.com/c/InigoQuilez
+// https://iquilezles.org/
+//
+// https://www.shadertoy.com/view/Xsl3Dl
+vec3 hash( vec3 p ) // replace this by something better
+{
+	p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
+            dot(p,vec3(269.5,183.3,246.1)),
+            dot(p,vec3(113.5,271.9,124.6)));
+
+	return -1.0 + 2.0*fract(sin(p)*43758.5453123);
 }
 
-float fbm(vec2 position) {
-  float value = 0.0;
-  float amplitude = 0.5;
-  vec2 shift = vec2(100.0);
-  
-  mat2 rotation = mat2(cos(0.4), sin(0.4), -sin(0.5), cos(0.5));
-  for (int i = 0; i < NUM_OCTAVES; i++) {
+float noise( in vec3 p )
+{
+  vec3 i = floor( p );
+  vec3 f = fract( p );
+	
+	vec3 u = f*f*(3.0-2.0*f);
 
-    value += amplitude * noise(position);
-    position = rotation * position * 2.0 + shift;
-    amplitude *= 0.75;
+  return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+                        dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+                   mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+                        dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+              mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+                        dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+                   mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+                        dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
+}
+
+float fbm(vec3 p, int octaves, float persistence, float lacunarity) {
+  float amplitude = 1.0;
+  float frequency = 1.0;
+  float total = 0.0;
+  float normalization = 0.0;
+
+  for (int i = 0; i < octaves; ++i) {
+    float noiseValue = noise(p * frequency);
+    total += noiseValue * amplitude;
+    normalization += amplitude;
+    amplitude *= persistence;
+    frequency *= lacunarity;
   }
-  
-  float sinVal = sin(value * 4.0 + u_time * 0.1) * 0.3;
-  float cosVal = cos(value * 8.0 + u_time * 0.2) * 0.2;
-  
-  return 0.5 + sinVal + cosVal;
+
+  total = smoothstep(-1.0, 1.0, total);
+
+  return total;
 }
 
-void main(void){
-  vec2 p=(gl_FragCoord.xy*2.-u_resolution.xy)/min(u_resolution.x,u_resolution.y);
-  
-  float t=u_time*.02;
-  
-  float time2=3.*t/2.;
-  
-  vec2 q=vec2(0.);
-  q.x=fbm(p+0.*time2);
-  q.y=fbm(p+vec2(1.));
-  vec2 r=vec2(0.);
-  r.x=fbm(p+1.*q+vec2(1.7,9.2)+.17*time2);
-  r.y=fbm(p+1.*q+vec2(1.3,2.8)+.126*time2);
-  float f=fbm(p+r);
-  vec3 color=mix(
-    vec3(0.),
-    vec3(.6,.6,.8),
-    clamp(f*f*f*f+.4*f*f*f+.2*f*f+.2*cos(u_time * .5),0.,1.)
+vec3 generate_sky(vec2 pixelCoords) {
+  vec3 color1 = vec3(1.0, 1.0, 1.0);
+  vec3 color2 = vec3(1.0, 1.0, 1.0);
+  return mix(
+    color1,
+    color2,
+    smoothstep(0.5, 1., pixelCoords.y - 1.)
   );
-  
-  color=mix(
-    color,
-    vec3(0.),
-    clamp(length(q),0.,1.)
-  );
-  
-  color=mix(
-    color,
-    vec3(.1),
-    clamp(length(r.x),0.,-2.)
-  );
-  
-  // vec3 waveColor=mix(
-  //   vec3(.43,.43,.59),
-  //   vec3(0.),
-  //   1.-f*f*f*f*f*f*f*f
-  // );
-  
-  vec3 oceanColor=mix(
-    vec3(.5,.5,.6),
-    vec3(.1,.5,.5),
-    clamp(f*f*f*f+.4*f*f*f+.2*f*f+.2*sin(u_time*.2),0.,1.)
-  );
-  
-  gl_FragColor=vec4(color,1.);
 }
+
+vec3 draw_montains(
+  vec3 backgroundColor,
+  vec3 mountainColor,
+  vec2 pixelCoords,
+  float depth
+) {
+  float y = fbm(
+    vec3(
+        pixelCoords.x * 256. * hash(mountainColor)
+      ) / 256.,
+      2,
+      .5,
+      2.
+  );
+
+  vec3 fogColor = vec3(1.0, 1.0, 1.0);
+  float fogFactor = smoothstep(0.0, 8000.0, depth);
+  float heigthFactor = smoothstep(256., -300., pixelCoords.y);
+  heigthFactor *= heigthFactor;
+  fogFactor = mix(
+    heigthFactor,
+    fogFactor,
+    fogFactor
+  );
+
+  mountainColor = mix(mountainColor, fogColor, fogFactor);
+
+  float blur = smoothstep(0.0, 6300., depth) * 0.2;
+
+  float sdfMountain = pixelCoords.y - y;
+
+  vec3 color = mix(
+    mountainColor,
+    backgroundColor,
+    smoothstep(0.0, blur, sdfMountain)
+  );
+
+  return color;
+}
+
+void main() {
+  vec2 pixelCoords = gl_FragCoord.xy / u_resolution.xy;
+  pixelCoords = pixelCoords * u_zoom - (u_zoom - 1.) / 2.;
+
+  vec3 color = generate_sky(pixelCoords);
+
+  vec2 timeOffset = vec2(
+    u_time * .05, 0.
+  );
+  vec2 mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 2.1)) * 2. + timeOffset;
+  color = draw_montains(color, vec3(0.89,0.992,1.), mountainCords, 6300.);
+
+  mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 1.5)) * 1.5 + timeOffset;
+  color = draw_montains(color, vec3(0.82,0.969,1.), mountainCords, 5000.);
+
+  mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, .7)) + timeOffset;
+  color = draw_montains(color, vec3(0.753,0.969,1.), mountainCords, 2500.);
+
+  mountainCords = ((pixelCoords * 2. - .1) - vec2(0.0, .0)) * .5 + timeOffset;
+  color = draw_montains(color, vec3(0.58,0.969,1.), mountainCords, 1000.);
+
+  mountainCords = ((pixelCoords * 2.) - vec2(0.0, -1.)) *.5 + timeOffset;
+  color = draw_montains(color, vec3(0.2863, 0.9098, 1.0), mountainCords, .0);
+
+  gl_FragColor = vec4(color, 1.0);
+}
+
+
+
+

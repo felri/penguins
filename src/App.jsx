@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Background from "./components/background";
+import Penguin from "./components/penguin";
+import Plot from "./components/plot";
 import { ClipboardMessage } from "./components/utils";
-import CV from "./components/cv";
-import { TypeAnimation } from "react-type-animation";
 import {
   GithubOutlined,
   LinkedinOutlined,
@@ -16,67 +16,48 @@ const Link = ({ href, children }) => (
   </a>
 );
 
-function App() {
-  const [showCv, setShowCv] = useState(false);
+function App({ updateRefValue }) {
+  const [dissipate, setDissipate] = useState(false);
 
-  const handleShowCv = () => {
-    setShowCv(true);
-  };
-
-  const handleHideCv = () => {
-    setShowCv(false);
+  const handleShowGraph = () => {
+    updateRefValue();
+    setDissipate(!dissipate);
   };
 
   return (
     <div className="App">
-      <div className="container-typing">
-        <TypeAnimation
-          sequence={["Hi", 1500, "I'm Felipe,"]}
-          wrapper="div"
-          cursor={false}
-          className="typing"
-        />
-        <TypeAnimation
-          sequence={[
-            3500,
-            "I'm a Software Developer",
-            2500,
-            "Let's build something together!",
-          ]}
-          deletionSpeed={100}
-          wrapper="div"
-          cursor={false}
-          className="typing"
-        />
+      <div className="container-info">
+        <span className={
+          dissipate ? "dissipate" : ""
+        }>
+          Do you like penguins?
+          <br /> Do you like scatter plots?
+          <br /> Well, have we got a treat for you!
+          <div className="click-here" onClick={handleShowGraph}>
+            Click Here
+          </div>
+        </span>
       </div>
-      <div className="container-icons">
-        <Link href="https://github.com/felri">
-          <GithubOutlined className="icon" viewBox="0 0 1024 1024" />
-        </Link>
-        <Link href="https://www.linkedin.com/in/frcm/">
-          <LinkedinOutlined className="icon" />
-        </Link>
-        <ClipboardMessage text="felipercmelo@gmail.com">
-          <MailOutlined className="icon" />
-        </ClipboardMessage>
-        <div className="modal-action" onClick={handleShowCv}>
-          <span className="icon">CV</span>
-        </div>
-      </div>
-      <CV
-        show={showCv}
-        handleShowCv={handleShowCv}
-        handleHideCv={handleHideCv}
-      />
+      {
+        dissipate && (
+          <Plot />
+        )}
     </div>
   );
 }
 
 function AppWrapper() {
+  const showGraph = useRef(false);
+
+  const updateRefValue = () => {
+    showGraph.current = !showGraph.current;
+  };
+
   return (
     <>
-      <Background />
-      <App />
+      {/* <Background isToggled={showGraph} /> */}
+      <Penguin zoom={showGraph} />
+      <App updateRefValue={updateRefValue}/>
     </>
   );
 }
