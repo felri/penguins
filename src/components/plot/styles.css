@@ -1,0 +1,29 @@
+.container-plot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.close-modal {
+  position: fixed;
+  text-align: center;
+  font-size: 1.8em;
+  top: 10px;
+  right: 20px;
+  transition: .2s;
+  cursor: pointer;
+  z-index: 10;
+  color: #000;
+}
+
+
+.close-modal:hover {
+  transform: scale(1.5);
+}
+
+.close-modal span {
+  color: #505050;
+  font-size: .8em;
+}

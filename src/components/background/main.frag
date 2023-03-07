@@ -66,13 +66,7 @@ float fbm(vec3 p, int octaves, float persistence, float lacunarity) {
 }
 
 vec3 generate_sky(vec2 pixelCoords) {
-  vec3 color1 = vec3(1.0, 1.0, 1.0);
-  vec3 color2 = vec3(1.0, 1.0, 1.0);
-  return mix(
-    color1,
-    color2,
-    smoothstep(0.5, 1., pixelCoords.y - 1.)
-  );
+  return vec3(1);
 }
 
 vec3 draw_montains(
@@ -87,7 +81,7 @@ vec3 draw_montains(
       ) / 256.,
       2,
       .5,
-      2.
+      1.
   );
 
   vec3 fogColor = vec3(1.0, 1.0, 1.0);
@@ -124,10 +118,10 @@ void main() {
   vec2 timeOffset = vec2(
     u_time * .05, 0.
   );
-  vec2 mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 2.1)) * 2. + timeOffset;
-  color = draw_montains(color, vec3(0.89,0.992,1.), mountainCords, 6300.);
+  // vec2 mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 2.1)) * 2. + timeOffset;
+  // color = draw_montains(color, vec3(0.89,0.992,1.), mountainCords, 6300.);
 
-  mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 1.5)) * 1.5 + timeOffset;
+  vec2 mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, 1.5)) * 1.5 + timeOffset;
   color = draw_montains(color, vec3(0.82,0.969,1.), mountainCords, 5000.);
 
   mountainCords = ((pixelCoords * 2. - 1.) - vec2(0.0, .7)) + timeOffset;

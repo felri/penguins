@@ -6,6 +6,9 @@ import Papa from "papaparse";
 import { OrbitControls, useGLTF, Merged, useTexture } from "@react-three/drei";
 import { isMobile } from "../utils";
 import { Perf } from "r3f-perf";
+import OpacityWrapper from "../opacityWrapper";
+import CameraControls from "../cameraControls";
+import "./styles.css";
 
 function Image({ url, position, rotation, scale }) {
   const texture = useTexture(url);
@@ -45,12 +48,9 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4 }) {
   }, [hovered]);
 
   useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.rotation.z += 0.01;
-      meshRef.current.rotation.needUpdate = true;
-    }
+    if (!meshRef.current) return;
+    meshRef.current.rotation.x += 0.01;
+    meshRef.current.rotation.needUpdate = true;
 
     if (hovered) {
       if (meshRef.current.scale.x < 1.7) {
@@ -342,6 +342,28 @@ function Texts({ minMax }) {
   );
 }
 
+function CloseButton({ onClick }) {
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.keyCode === 27) {
+        onClick();
+      }
+    };
+    document.addEventListener("keydown", handleEsc, false);
+    return () => {
+      document.removeEventListener("keydown", handleEsc, false);
+    };
+  }, [onClick]);
+
+  return (
+    <div onClick={onClick} className="close-modal">
+      close
+      <br />
+      <span>[esc]</span>
+    </div>
+  );
+}
+
 function PenguinPlot() {
   const lightRef = useRef();
   const [data, setData] = useState([]);
@@ -385,17 +407,10 @@ function PenguinPlot() {
 
   return (
     <>
-      <Perf />
-      <OrbitControls
-        enablePan={false}
-        maxPolarAngle={Math.PI * 0.5}
-        maxAzimuthAngle={Math.PI * 0.5}
-        minAzimuthAngle={0}
-        minZoom={isMobile ? 2 : 3}
-        repeatKeys={true}
-      />
+      {/* <Perf /> */}
+      <CameraControls  />
       <ambientLight intensity={0.2} />
-      <pointLight position={[20, 0, 150]}  ref={lightRef}  intensity={.6}/>
+      <pointLight position={[20, 0, 150]} ref={lightRef} intensity={0.6} />
       {/* {lightRef.current && <pointLightHelper args={[lightRef.current]} />} */}
 
       <group>
@@ -428,28 +443,32 @@ function PenguinPlot() {
   );
 }
 
-function Wrapper() {
+function Wrapper({ show, close }) {
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        position: "fixed",
-        top: 0,
-        left: 0,
+    <OpacityWrapper
+      duration={show ? 1000 : 400}
+      from={0}
+      to={1}
+      show={show}
+      styles={{
+        zIndex: show ? 1 : -1,
       }}
+      className="container-plot"
     >
-      <Canvas
-        rameloop="demand"
-        orthographic
-        camera={{
-          position: [170, 40, 200],
-          zoom: isMobile ? 2.5 : 4,
-        }}
-      >
-        <PenguinPlot />
-      </Canvas>
-    </div>
+      <>
+        <CloseButton onClick={close} />
+        <Canvas
+          rameloop="demand"
+          orthographic
+          camera={{
+            position: [170, 40, 200],
+            zoom: isMobile ? 2.5 : 4,
+          }}
+        >
+          <PenguinPlot close={close} />
+        </Canvas>
+      </>
+    </OpacityWrapper>
   );
 }
 

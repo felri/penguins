@@ -1,19 +1,19 @@
-import { Canvas, useFrame} from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
   useGLTF,
   useTexture,
   useAnimations,
 } from "@react-three/drei";
-import { Perf } from 'r3f-perf'
+import OpacityWrapper from "../opacityWrapper";
+import { Perf } from "r3f-perf";
 
 import { useRef, Suspense, useEffect } from "react";
 import { isMobile } from "../utils";
 import * as THREE from "three";
 import "./styles.css";
 
-export function Penguin({zoom}) {
-  const currentZoom = useRef(1.0);
+export function Penguin() {
   const group = useRef();
   const { nodes, materials, animations } = useGLTF("/PENGUIM.glb");
   const { clips, mixer } = useAnimations(animations, group);
@@ -28,31 +28,6 @@ export function Penguin({zoom}) {
     const clipAction = mixer.clipAction(clips[0], group.current);
     clipAction.play();
   }, [clips]);
-
-  useFrame(() => {
-    const defaultXPose = isMobile ? 1.5 : 25.5;
-    const currentX = group.current.position.x;
-
-    const factor = zoom.current ? 25.0 : 1.0;
-    const currentZoomValue = currentZoom.current;
-
-    const multiplier = THREE.MathUtils.lerp(
-      currentZoomValue,
-      factor,
-      0.1
-    );
-
-    if (currentZoomValue !== factor) {
-      group.current.position.x = THREE.MathUtils.lerp(
-        currentX,
-        defaultXPose * multiplier,
-        0.1
-      );
-      group.current.position.needsUpdate = true;
-      currentZoom.current = multiplier;
-    }
-
-  });
 
   return (
     <>
@@ -76,13 +51,15 @@ export function Penguin({zoom}) {
   );
 }
 
-function Wrapper({zoom}) {
+function Wrapper({ show }) {
   return (
-    <div className="container-penguin">
-      <Canvas rameloop="demand">
-        <Penguin zoom={zoom} />
-      </Canvas>
-    </div>
+    <OpacityWrapper duration={show ? 400 : 1000} from={1} to={0} show={show}>
+      <div className="container-penguin">
+        <Canvas rameloop="demand">
+          <Penguin />
+        </Canvas>
+      </div>
+    </OpacityWrapper>
   );
 }
 
