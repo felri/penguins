@@ -15,7 +15,7 @@ import "./styles.css";
 
 export function Penguin() {
   const group = useRef();
-  const { nodes, materials, animations } = useGLTF("/PENGUIM.glb");
+  const { nodes, materials, animations } = useGLTF("PENGUIM.glb");
   const { clips, mixer } = useAnimations(animations, group);
 
   const config = {

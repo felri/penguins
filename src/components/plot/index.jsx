@@ -103,7 +103,7 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4 }) {
 function Penguins({ position, color = "black", data, minMax }) {
   const meshRef = useRef();
   const ref = useRef();
-  const { nodes } = useGLTF("/dotgraphpenguin.glb");
+  const { nodes } = useGLTF("dotgraphpenguin.glb");
 
   return (
     <Merged meshes={nodes} ref={ref} rotation={[0, 0, 0]}>
@@ -420,13 +420,13 @@ function PenguinPlot() {
             position={[18, -84, 38]}
             rotation={[-Math.PI * 0.5, 0, 0]}
             scale={100}
-            url="/bgcube1.png"
+            url="bgcube1.png"
           />
           <Image
             position={[-84, 50, -38]}
             rotation={[0, Math.PI * 0.5, 0]}
             scale={100}
-            url="/bgcube2.png"
+            url="bgcube2.png"
           />
 
           <boxGeometry args={[170, 170, 170]} />

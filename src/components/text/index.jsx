@@ -10,7 +10,7 @@ export default function Text({ text, hovered, color, ...props }) {
 
   const config = useMemo(
     () => ({
-      font: '/helvetiker_regular.typeface.json',
+      font: 'helvetiker_regular.typeface.json',
     }),
     []
   );
