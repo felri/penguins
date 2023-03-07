@@ -388,7 +388,7 @@ function PenguinPlot() {
   };
 
   useEffect(() => {
-    Papa.parse("/penguins.csv", {
+    Papa.parse("penguins.csv", {
       download: true,
       header: true,
       complete: (results) => {
