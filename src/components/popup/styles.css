@@ -1,0 +1,49 @@
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup__content {
+  position: relative;
+  background-color: #ffffffb5;
+  padding: 20px;
+  color: black;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgb(0 0 0 / 50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup__image {
+    width: 200px;
+    object-fit: cover;
+
+}
+
+.popup__close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.feather {
+    width: 1em;
+    height: 1em;
+    vertical-align: text-bottom;
+}
+
+.featherx {
+    width: 1.5em;
+    height: 1.5em;
+}

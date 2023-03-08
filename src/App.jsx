@@ -9,6 +9,7 @@ import {
   MailOutlined,
 } from "@ant-design/icons";
 import "./App.css";
+import Popup from "./components/popup";
 
 const Link = ({ href, children }) => (
   <a href={href} target="_blank" rel="noreferrer">
@@ -24,7 +25,6 @@ function Home({ handleShowGraph, show }) {
       to={0}
       show={show}
       className="container-info"
-      unmountOnExit={true}
       styles={{
         zIndex: !show ? 1 : -1,
       }}
@@ -43,16 +43,28 @@ function Home({ handleShowGraph, show }) {
 
 function App({ onClick }) {
   const [showplot, setShowPlot] = useState(false);
+  const [showDataPoint, setShowDataPoint] = useState(false);
+  const [dataPoint, setDataPoint] = useState({});
 
   const handleShowGraph = () => {
     onClick();
     setShowPlot(!showplot);
   };
 
+  const handleDataPointClick = (e) => {
+    setShowDataPoint(!showDataPoint);
+    setDataPoint(e);
+  };
+
   return (
     <div className="App">
       <Home handleShowGraph={handleShowGraph} show={showplot} />
-      <Plot show={showplot} close={handleShowGraph} />
+      <Plot 
+        show={showplot}
+        close={handleShowGraph}
+        onClick={handleDataPointClick}
+      />
+      <Popup data={dataPoint} show={showDataPoint} close={handleDataPointClick}/>
     </div>
   );
 }

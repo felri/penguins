@@ -19,13 +19,13 @@ function Image({ url, position, rotation, scale }) {
         attach="material"
         map={texture}
         transparent
-        opacity={0.5}
+        opacity={0.8}
       />
     </mesh>
   );
 }
 
-function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4 }) {
+function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4, onClick }) {
   const meshRef = useRef();
   const x = d.bill_depth * 140 - 75;
   const y = d.bill_length * 150 - 70;
@@ -81,13 +81,7 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4 }) {
       scale={1.3}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
-      onClick={() =>
-        console.log({
-          mass: d.body_mass_g,
-          bill_length: d.bill_length_mm,
-          bill_depth: d.bill_depth_mm,
-        })
-      }
+      onClick={() => onClick(d)}
       ref={meshRef}
       key={i}
       position={[x, y, z]}
@@ -100,7 +94,7 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4 }) {
   );
 }
 
-function Penguins({ position, color = "black", data, minMax }) {
+function Penguins({ data, onClick }) {
   const meshRef = useRef();
   const ref = useRef();
   const { nodes } = useGLTF("dotgraphpenguin.glb");
@@ -108,7 +102,7 @@ function Penguins({ position, color = "black", data, minMax }) {
   return (
     <Merged meshes={nodes} ref={ref} rotation={[0, 0, 0]}>
       {(meshs) =>
-        data.map((d, i) => <Penguin key={i} d={d} i={i} {...meshs} />)
+        data.map((d, i) => <Penguin key={i} d={d} i={i} {...meshs} onClick={onClick} />)
       }
     </Merged>
   );
@@ -364,7 +358,7 @@ function CloseButton({ onClick }) {
   );
 }
 
-function PenguinPlot() {
+function PenguinPlot({ onClick }) {
   const lightRef = useRef();
   const [data, setData] = useState([]);
 
@@ -408,7 +402,7 @@ function PenguinPlot() {
   return (
     <>
       {/* <Perf /> */}
-      <CameraControls  />
+      <CameraControls />
       <ambientLight intensity={0.2} />
       <pointLight position={[20, 0, 150]} ref={lightRef} intensity={0.6} />
       {/* {lightRef.current && <pointLightHelper args={[lightRef.current]} />} */}
@@ -436,14 +430,17 @@ function PenguinPlot() {
           />
         </mesh>
         <group rotation={[0, Math.PI * 0.5, 0]}>
-          <Penguins color={"black"} data={data} minMax={minMax} />
+          <Penguins
+            data={data}
+            onClick={onClick}
+          />
         </group>
       </group>
     </>
   );
 }
 
-function Wrapper({ show, close }) {
+function Wrapper({ show, close, onClick }) {
   return (
     <OpacityWrapper
       duration={show ? 1000 : 400}
@@ -465,11 +462,11 @@ function Wrapper({ show, close }) {
             zoom: isMobile ? 2.5 : 4,
           }}
         >
-          <PenguinPlot close={close} />
+          <PenguinPlot close={close} onClick={onClick}/>
         </Canvas>
       </>
     </OpacityWrapper>
   );
 }
 
-export default Wrapper;
+export default React.memo(Wrapper);
