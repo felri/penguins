@@ -69,11 +69,11 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4, onClick }) {
 
   const color =
     d.species === "Adelie" ? (
-      <Blue />
+      <Blue onClick={() => onClick(d)}/>
     ) : d.species === "Gentoo" ? (
-      <Green />
+      <Green onClick={() => onClick(d)}/>
     ) : d.species === "Chinstrap" ? (
-      <Red_1 />
+      <Red_1 onClick={() => onClick(d)}/>
     ) : null;
 
   return (
@@ -81,15 +81,15 @@ function Penguin({ i, d, Blue, Green, Red_1, Red_2, Red_3, Red_4, onClick }) {
       scale={1.3}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
-      onClick={() => onClick(d)}
+      
       ref={meshRef}
       key={i}
       position={[x, y, z]}
       rotation={initialRandomRotation(i)}
     >
       {color}
-      <Red_3 />
-      <Red_4 />
+      <Red_3 onClick={() => onClick(d)}/>
+      <Red_4 onClick={() => onClick(d)}/>
     </Red_2>
   );
 }
